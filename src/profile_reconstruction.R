@@ -1,3 +1,19 @@
+check_variables_name <- function(data, my_var){
+  required_cols <- c("INDEX", "DEPTH", my_var)
+  
+  return(setdiff(required_cols, names(data)))
+}
+
+check_duplicates <- function(data){
+  grouped_data <- data %>% 
+    group_by(INDEX, DEPTH) %>% 
+    summarise(count = n(), .groups = "keep") %>%
+    as.data.frame()
+  grouped_data <- grouped_data %>% filter(count > 1)
+  return(grouped_data[, c("DEPTH", "INDEX")])
+}
+
+
 
 all_na_index <- function(data, var_label){
   res <- c()
@@ -82,26 +98,6 @@ create_fdobj <- function(data, x, all_y, lambda, K, min_prof = NA, max_prof = NA
   return(res)
 }
 
-plot_cov_fun <- function(cov_fda, start, end, step = .1){
-  new_args <- seq(start, end, step)
-  diag_cov <- evaldiag.bifd(new_args, cov_fda)
-  res <- plot(new_args,diag_cov,type="l",
-              xlab = "DEPTH", ylab="",
-              cex.axis=1.25,cex.lab=1.25,cex.main=1.25,lwd=2)
-  return(res)
-}
-
-plot_cor_fun <- function(fdobj, start, end, step = .1){
-  new_args <- seq(start, end, step)
-  cor_fda <- cor.fd(new_args, fdobj)
-  require(fields)
-  res <- image.plot(new_args,new_args,cor_fda,
-                    xlab="DEPTH", ylab = "DEPTH",
-                    cex.axis=1.25,cex.lab=1.25,cex.main=1.25,
-                    legend.shrink=0.75,legend.line=-1.5)
-  return(res)
-}
-
 compute_asymptotic_sd <- function(fpca, n_pc, covestimate, proj_pen = .1, step= .1){
   range <- fpca$meanfd$basis$rangeval
   argvals <- seq(range[1], range[2], step)
@@ -182,101 +178,6 @@ add_reps_to_fdobj <- function(fdobj, coefs){
   return(res)
 }
 
-
-plot_projected_scores <- function(fpca, new_scores){
-  plot(fpca$scores[, 1], fpca$scores[, 2])
-  points(new_scores[,1], new_scores[, 2], col = "red")
-  plot(fpca$scores[, 3], fpca$scores[, 4])
-  points(new_scores[,3], new_scores[, 4], col = "red")
-}
-
-
-retrieve_quantiles <- function(MSE_profiles){
-  quant <- quantile(MSE_profiles$MSE, probs = c(.25, .50, .75))
-  
-  MSE_profiles <- MSE_profiles %>% mutate(diff_Q1 = abs(MSE - quant[1]),
-                                          diff_Q2 = abs(MSE - quant[2]),
-                                          diff_Q3 = abs(MSE - quant[3]))
-  max <- MSE_profiles[which(MSE_profiles$MSE == max(MSE_profiles$MSE)),]$INDEX[1]
-  min <- MSE_profiles[which(MSE_profiles$MSE == min(MSE_profiles$MSE)),]$INDEX[1]
-  q1 <- MSE_profiles[which(MSE_profiles$diff_Q1 == min(MSE_profiles$diff_Q1)),]$INDEX[1]
-  q2 <- MSE_profiles[which(MSE_profiles$diff_Q2 == min(MSE_profiles$diff_Q2)),]$INDEX[1]
-  q3 <- MSE_profiles[which(MSE_profiles$diff_Q3 == min(MSE_profiles$diff_Q3)),]$INDEX[1]
-  res <- data.frame(QUANTILE = c("MIN", "Q1", "MEDIAN", "Q3", "MAX"),
-                    INDEX = c(min, q1, q2, q3, max))
-  return(res)
-}
-
-retrieve_quantile_indexes <- function(predicted_data, observed_data, var){
-  model_stat <- eval_pred(predicted_data, observed_data, var = var)
-  MSE_profiles <- model_stat$MSE_profiles
-  res <- retrieve_quantiles(MSE_profiles)
-  return(res)
-}
-
-plot_profiles <- function(index_df, data_used, data_predicted, data_sup = NULL, var_label, CI = FALSE){
-  indexes <- index_df$INDEX
-  min_val <- min(data_used[, var_label])
-  max_val <- max(data_used[, var_label])
-  data_used <- data_used %>% filter(INDEX %in% indexes)
-  data_predicted <- data_predicted %>% filter(INDEX %in% indexes)
-  data_predicted$INDEX <- factor(data_predicted$INDEX,
-                                 levels = indexes)
-  facet_labels <- index_df$QUANTILE
-  names(facet_labels) <- index_df$INDEX
-  res <- ggplot() + 
-    geom_point(data = data_used, aes(.data[[var_label]], DEPTH),
-               alpha = .8,
-               size = 2.2) +
-    geom_path(data = data_predicted, 
-              aes(.data[[var_label]], DEPTH), 
-              lwd = .9,
-              alpha = 1,
-              col = "#E69F00") +
-    
-    scale_x_continuous() +
-    scale_y_reverse() +
-    ylab("DEPTH") +
-    # xlab(var_label) +
-    facet_wrap(.~INDEX,
-               nrow = 1,
-               labeller = labeller(INDEX = facet_labels),
-               scales = "free_x") +
-    theme_bw() +
-    theme(legend.position = "top",
-          strip.text = element_text(size = 11),
-          strip.background = element_rect(fill = "transparent"),
-          axis.text = element_text(size = 10),
-          axis.title = element_text(size = 12))
-  if(!is.null(data_sup)){
-    data_sup <- data_sup %>% filter(INDEX %in% indexes)
-    res <- res + 
-      geom_path(data = data_sup, aes(.data[[var_label]], DEPTH), 
-                 col = my_palette[1],
-                 alpha = .8,
-                lwd = .9)
-  }
-  if(CI){
-    var_col_number <- which(colnames(data_predicted) == var_label)
-    BI_up <- colnames(data_predicted)[var_col_number + 1]
-    BI_low <- colnames(data_predicted)[var_col_number + 2]
-    res <- res + 
-      geom_path(data = data_predicted, 
-                aes(.data[[BI_up]], DEPTH), 
-                alpha = .8,
-                lty = "dotted",
-                lwd = .9) +
-      geom_path(data = data_predicted, 
-                aes(.data[[BI_low]], DEPTH), 
-                alpha = .8,
-                lty = "dotted",
-                lwd = .9)
-  }
-  
-  return(res)
-}
-
-
 project_incomplete_profiles <- function(incomplete_data, my_var, fpca, cov_fda, meanfd, sigma = NA){
   incomplete_indexes <- unique(incomplete_data$INDEX)
   n_args <- incomplete_data %>% group_by(INDEX) %>% summarise(count= n())
@@ -306,30 +207,3 @@ reconstruct_complete_profile_with_fpca <- function(complete_profiles, var_names,
   }
   return(res)
 }
-
-eval_pred <- function(predicted, observed, var, argvals = "DEPTH", subj = "INDEX"){
-  observed <- observed[, c(subj, argvals, var)]
-  predicted <- predicted[, c(subj, argvals, var)]
-  res_data <- inner_join(observed, predicted, by = c(argvals, subj))
-  colnames(res_data)[3:4] <- c("y", "yhat")
-  res_data <- res_data %>% mutate(residuals = y-yhat)
-  profile_stat <- res_data %>% group_by(.data[[subj]]) %>% summarise(MSE = 1/n()*sum(residuals^2))
-  profile_stat <- profile_stat %>% arrange(desc(MSE))
-  MSE <- 1/nrow(res_data)*sum(res_data$residuals^2)
-  return(list(res_data = res_data, MSE_profiles = profile_stat, MSE = MSE))
-}
-
-eval_CI <- function(predicted, observed, var){
-  merged_df <- inner_join(predicted, observed, by = c("INDEX", "DEPTH"))
-  var_name <- paste0(var, ".y")
-  pointwise <- merged_df %>% mutate(IN_CI = ifelse(.data[[var_name]] < CI_up & .data[[var_name]] > CI_low, TRUE, FALSE),
-                                    IN_CB = ifelse(.data[[var_name]] < CB_up & .data[[var_name]] > CB_low, TRUE, FALSE))
-  simultaneous_band <- pointwise %>% group_by(INDEX) %>% summarise(IN_CB = all(IN_CB))
-  prop_CI <- sum(pointwise$IN_CI)/nrow(pointwise)
-  prop_CB <- sum(simultaneous_band$IN_CB)/nrow(simultaneous_band)
-  return(list(CI = prop_CI, CB = prop_CB))
-}
-
-
-
-

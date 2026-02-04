@@ -30,6 +30,10 @@ for(i in 66:100){
 my_data$TEMPERATURE <- round(my_data$TEMPERATURE, 5)
 
 head(my_data)
-write.csv(my_data, "data/example_data.csv", row.names = FALSE)
+
+source("src/profile_tempering.R")
+sparse_data <- shrink_random_profiles_with_seed(my_data)
+
+write.csv(sparse_data, "data/example_data.csv", row.names = FALSE)
 
 

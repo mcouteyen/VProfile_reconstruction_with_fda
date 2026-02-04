@@ -11,16 +11,16 @@ ui <- page_sidebar(
     shinyWidgets::sliderTextInput(
       "fda_slider_lambda",
       "Set penalty parameter lambda",
-      choices=c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2),
+      choices=c(1e-6, 1e-5, 1e-4, 1e-3, 1e-2, .1, 1),
       selected=1e-4, 
       grid = T),
       # select K
       sliderInput(
         inputId = "fda_slider_K",
         label = "Set the number of basis functions K",
-        min = 30,
-        max = 250,
-        value = 200
+        min = 10,
+        max = 150,
+        value = 30
       )
     ),
     withSpinner(plotOutput("fda_plot", height = "650px"))

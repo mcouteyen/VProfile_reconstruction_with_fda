@@ -79,3 +79,23 @@ plot_one_profile <- function(index, data_used, data_predicted, data_sup = NULL, 
   return(res)
 }
 
+plot_cov_fun <- function(cov_fda, start, end, step = .1){
+  new_args <- seq(start, end, step)
+  diag_cov <- evaldiag.bifd(new_args, cov_fda)
+  res <- plot(new_args,diag_cov,type="l",
+              xlab = "DEPTH", ylab="",
+              cex.axis=1.25,cex.lab=1.25,cex.main=1.25,lwd=2)
+  return(res)
+}
+
+plot_cor_fun <- function(fdobj, start, end, step = .1){
+  new_args <- seq(start, end, step)
+  cor_fda <- cor.fd(new_args, fdobj)
+  require(fields)
+  res <- image.plot(new_args,new_args,cor_fda,
+                    xlab="DEPTH", ylab = "DEPTH",
+                    cex.axis=1.25,cex.lab=1.25,cex.main=1.25,
+                    legend.shrink=0.75,legend.line=-1.5)
+  return(res)
+}
+

@@ -1,14 +1,40 @@
+#' Construct a sparse data matrix or array from a list of observations
+#'
+#' This function builds a sparse matrix (or array for multivariate data)
+#' filled with \code{NA} values from a list of irregularly sampled profiles.
+#'
+#' @details
+#' This function is adapted from internal data-handling utilities used in the
+#' \pkg{fda} package. It has been modified to better accommodate sparse and
+#' multivariate profile data in the context of vertical oceanographic profiles.
+#'
+#' The original concepts and data structures are attributed to Ramsay et al.
+#' (see the \pkg{fda} package documentation). This implementation represents
+#' a user-side adaptation and extension.
+#'
+#' @param datalist A list. Each element is a matrix with at least two columns.
+#'   The first column corresponds to the sampling index (e.g. depth or time),
+#'   and the remaining columns correspond to observed variables.
+#'
+#' @return
+#' If the data are univariate, a matrix of dimension
+#' \code{length(unique(index)) x number_of_profiles}.
+#' If multivariate, an array of dimension
+#' \code{length(unique(index)) x number_of_profiles x number_of_variables}.
+#'
+#' @references
+#' Ramsay, J. O., Wickham, H., Graves, S., & Hooker, G. (2023).
+#' \emph{fda: Functional Data Analysis}. R package.
+#'
+#' @author
+#' Adapted and extended by M. Couteyen Carpaye, 2025.
+#'
+#' @seealso \code{\link[fda]{smooth.basis}}, \code{\link[fda]{pca.fd}}
+#'
+#' @keywords internal
+#'
+#' @export
 sparse.mat <- function(datalist){
-  #
-  #Create a matrix of sparse data with NAs out of a list of sparse data
-  #
-  # Arguments:
-  #
-  # DATALIST .... A list object. Each element of the list is a matrix with ncol > 1. 
-  #               The first column of each element corresponds to the point index per 
-  #               observation. The following columns are the observations per variable.
-  # 
-  #Last Modified : 07 March 2025
   time = sort(unique(unlist(lapply(datalist, function(x) x[,1]))))
   data = matrix(NA, nrow = length(time), ncol = length(datalist))
   
@@ -30,6 +56,53 @@ sparse.mat <- function(datalist){
   return(data)
 }
 
+#' Compute PACE scores for sparse functional data (corrected version)
+#'
+#' This function computes Functional Principal Component scores for sparsely
+#' observed profiles using a PACE-like approach.
+#'
+#' @details
+#' This function is adapted from the internal logic of PACE score computation
+#' routines used in the \pkg{fda} package. The original methodology is described
+#' in Yao et al. (2005).
+#'
+#' Modifications were introduced to:
+#' \itemize{
+#'   \item handle sparse vertical profiles,
+#'   \item explicitly account for truncated profiles,
+#'   \item improve numerical stability,
+#'   \item support multivariate functional data.
+#' }
+#'
+#' The author of this script claims authorship only for these adaptations and
+#' extensions; the underlying theoretical framework and original implementation
+#' remain the intellectual property of the \pkg{fda} authors.
+#'
+#' @param data A list of matrices containing sparse observations.
+#' @param time A numeric vector of observation points (e.g. depth).
+#' @param covestimate A covariance estimate object produced by \pkg{fda}.
+#' @param PC A functional PCA object from \pkg{fda}.
+#' @param varest Optional noise variance. If \code{NA}, it is estimated from data.
+#'
+#' @return
+#' A matrix of reconstructed FPCA scores for each profile.
+#'
+#' @references
+#' Ramsay, J. O., & Silverman, B. W. (2005).
+#' \emph{Functional Data Analysis}. Springer.
+#' 
+#' Yao, F., Mueller, H.G., Wang, J.L. (2005).
+#'\emph{Functional data analysis for sparse longitudinal data}. J.American Statistical Association, 100, 577-590.
+#'
+#' Ramsay, J. O., Wickham, H., Graves, S., & Hooker, G. (2023).
+#' \emph{fda: Functional Data Analysis}. R package.
+#'
+#' @author
+#' Adapted and extended by M. Couteyen Carpaye, 2025.
+#'
+#' @seealso \code{\link[fda]{pca.fd}}, \code{\link[fda]{eval.fd}}
+#'
+#' @export
 scoresPACE_corrected <- function(data, time, covestimate, PC, varest = NA){
   npc <- length(PC$varprop)
   coef <- PC$values[1:npc]

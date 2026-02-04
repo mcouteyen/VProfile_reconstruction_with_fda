@@ -1,3 +1,18 @@
+#' Plot FPCA scores and projected incomplete profiles
+#'
+#' Produces a two-dimensional FPCA score plot (PC1 vs PC2), showing both
+#' complete profiles used to compute the FPCA and incomplete profiles
+#' projected onto the FPCA space.
+#'
+#' @param fpca A FPCA object returned by pca.fd.
+#' @param scr A data.frame or matrix of FPCA scores for projected
+#'   incomplete profiles.
+#'
+#' @return A ggplot object.
+#'
+#' @details
+#' The percentage of variance explained by the first two principal components
+#' is displayed on the axes labels.
 plot_scores_projected <- function(fpca, scr){
   fpca_scores <- fpca$scores
   colnames <- c()
@@ -29,6 +44,19 @@ plot_scores_projected <- function(fpca, scr){
   return(res)
 }
 
+#' Plot a reconstructed vertical profile
+#'
+#' Displays observed data points and reconstructed profiles for a given
+#' profile index, with optional additional profiles and confidence intervals.
+#'
+#' @param index Profile identifier to plot.
+#' @param data_used A data.frame containing the original observations.
+#' @param data_predicted A data.frame containing reconstructed profiles.
+#' @param data_sup Optional data.frame of supplementary profiles.
+#' @param var_label Name of the variable to plot.
+#' @param CI Logical; draw confidence intervals if TRUE.
+#'
+#' @return A ggplot object.
 plot_one_profile <- function(index, data_used, data_predicted, data_sup = NULL, var_label, CI = FALSE){
   data_used <- data_used %>% filter(INDEX == index)
   data_predicted <- data_predicted %>% filter(INDEX == index)
@@ -79,6 +107,17 @@ plot_one_profile <- function(index, data_used, data_predicted, data_sup = NULL, 
   return(res)
 }
 
+#' Plot the diagonal of a functional covariance surface
+#'
+#' Plots the pointwise variance (diagonal of the covariance function)
+#' as a function of the argument (e.g. depth).
+#'
+#' @param cov_fda A functional covariance object.
+#' @param start Minimum argument value.
+#' @param end Maximum argument value.
+#' @param step Resolution of the evaluation grid.
+#'
+#' @return The output of the base plot function.
 plot_cov_fun <- function(cov_fda, start, end, step = .1){
   new_args <- seq(start, end, step)
   diag_cov <- evaldiag.bifd(new_args, cov_fda)
@@ -88,6 +127,17 @@ plot_cov_fun <- function(cov_fda, start, end, step = .1){
   return(res)
 }
 
+#' Plot the functional correlation surface
+#'
+#' Displays the correlation surface of a functional data object as
+#' a two-dimensional image.
+#'
+#' @param fdobj A functional data object.
+#' @param start Minimum argument value.
+#' @param end Maximum argument value.
+#' @param step Resolution of the evaluation grid.
+#'
+#' @return A correlation surface plot.
 plot_cor_fun <- function(fdobj, start, end, step = .1){
   new_args <- seq(start, end, step)
   cor_fda <- cor.fd(new_args, fdobj)
@@ -98,4 +148,3 @@ plot_cor_fun <- function(fdobj, start, end, step = .1){
                     legend.shrink=0.75,legend.line=-1.5)
   return(res)
 }
-

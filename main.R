@@ -1,83 +1,141 @@
-# ---- LOAD LIBRARY AND SOURCES ----
+###############################################################################
+# main.R
+#
+# Purpose:
+# --------
+# This script provides a complete workflow to reconstruct vertical profiles
+# from sparse observations using functional data analysis (FDA).
+# The method is described in the associated article.
+#
+# The script:
+#   1. Loads required libraries and source files
+#   2. Loads sparse vertical profile data
+#   3. (Optional) Launches a Shiny app to explore smoothing parameters
+#   4. Defines reconstruction and smoothing parameters
+#   5. Runs the reconstruction algorithm
+#   6. Visualizes reconstructed profiles 
+#
+# Author:
+# -------
+# M. Couteyen Carpaye
+#
+# Requirements:
+# -------------
+# - R >= 4.0
+# - Packages: ggplot2, dplyr, fda
+# - Folder structure as provided in the repository
+#
+###############################################################################
+
+
+# ---- LOAD LIBRARIES AND SOURCE FILES ----------------------------------------
+
+# Required R packages
 required_pkgs <- c("ggplot2", "dplyr", "fda")
 invisible(lapply(required_pkgs, library, character.only = TRUE))
 
+# Source internal functions
 source("src/my_fda.R")
 source("src/profile_reconstruction.R")
 source("src/visualisation.R")
 
-# ---- LOAD DATA ----
 
-#data must have the following columns : "INDEX", "DEPTH"
-# sparse_data <- ("INSERT DATA PATH")
-#name of the variable to predict
-my_var <- "TEMPERATUrRE"
+# ---- LOAD DATA --------------------------------------------------------------
 
-## ---- USE EXAMPLE DATA ----
+# Input data must contain at least the following columns:
+#   - INDEX: profile identifier
+#   - DEPTH: depth (positive values, increasing downward)
+#   - one or more variables to be reconstructed (e.g. temperature, salinity)
 #
-# uncomment to use example data
-#
-sparse_data  <- read.csv("data/example_data.csv")
+# Example of custom data loading:
+# sparse_data <- read.csv("INSERT_DATA_PATH")
+
+# Name of the variable to reconstruct (must match a column name in the data)
+my_var <- "TEMPERATURE"
 
 
-# ---- SHINY APP : PROFILE VIZ ----
+# ---- USE EXAMPLE DATA --------------------------------------------------------
 #
-# uncomment to visualise your data smoothed 
-# and test your smoothing parameters
+# Uncomment the following line to use the example dataset provided
+# in the repository. This allows the user to test the full workflow
+# without external data.
+#
+sparse_data <- read.csv("data/example_data.csv")
+
+
+# ---- OPTIONAL: SHINY APP FOR PROFILE VISUALISATION --------------------------
+#
+# This Shiny application allows interactive exploration of smoothing
+# parameters and visual inspection of smoothed profiles prior to
+# reconstruction.
+#
+# Uncomment the block below to launch the application.
 #
 # required_pkgs <- c("shiny", "bslib", "shinycssloaders")
 # invisible(lapply(required_pkgs, library, character.only = TRUE))
-# 
+#
 # source("src/my_app.R")
 # shinyApp(ui, server)
 
 
-# ---- INIT VARIABLES ----
+# ---- INITIALISE RECONSTRUCTION PARAMETERS -----------------------------------
 
-#if a profiles starts after this depth it is considered truncated
-start_limit_complete_profile <- 1.5 
+# Depth threshold (m) below which a profile is considered truncated
+start_limit_complete_profile <- 1.5
 
-#if a profiles ends before this depth it is considered truncated
-end_limit_complete_profile <- 49.5 
+# Depth threshold (m) above which a profile is considered truncated
+end_limit_complete_profile <- 49.5
 
-#number of basis functions (K)
-bspline_smooth_nbasis <- 100 
+# Number of B-spline basis functions (K)
+bspline_smooth_nbasis <- 100
 
-#smoothing parameter (lambda)
-bspline_smooth_lambda <- 1e-3 
+# Smoothing parameter (lambda) for B-spline smoothing
+bspline_smooth_lambda <- 1e-3
 
-#number of principal components to use for reconstruction
+# Number of principal components used for reconstruction
 n_pc <- 30
 
-#sigma^2
-#if small, model fits the observed data more closely
-#if it is large, the fit is smoother
+# Variance parameter (sigma^2) controlling the projection penalty
+# - small values: closer fit to observed data
+# - large values: smoother reconstructed profiles
 proj_pen_sigma <- .001
 
-#depths to evaluate prediction
+# Depth grid used for prediction
 start <- 1
 end <- 50
 step <- .2
 
 
-# ---- RUN RECONSTRUCTION----
+# ---- RUN PROFILE RECONSTRUCTION ---------------------------------------------
+
+# Execute the full reconstruction workflow on sparse profiles
 source("src/run_pace_on_sparse_profiles.R")
 
-# ---- VISUALISATION ----
-# plot fpca plane
+
+# ---- VISUALISATION AND OUTPUT ------------------------------------------------
+
+# Plot the FPCA score space (projected scores)
 plot_scores_projected(fpca, scr)
 
-# select which prediction to visualise in incomplete_indexes
+# Select one incomplete profile to visualise
 index <- incomplete_indexes[8]
 
-plot_one_profile(index, sparse_data, predicted, var_label = my_var, CI = TRUE) + theme(legend.position = "none")
+# Plot observed and reconstructed profile with confidence intervals
+plot_one_profile(
+  index,
+  sparse_data,
+  predicted,
+  var_label = my_var,
+  CI = TRUE
+) + theme(legend.position = "none")
 
-# reconstructed incomplete profiles 
+# Preview reconstructed incomplete profiles
 head(reconstructed_profiles)
 
-# complete profiles and reconstructed incomplete profiles 
+# Combine complete profiles and reconstructed incomplete profiles
 all_data <- rbind(complete_data, reconstructed_profiles)
 head(all_data)
 
-# reconstructed incomplete profiles with pointwise confidence intervals (CI) and confidence bands (CB)
+# Reconstructed profiles with pointwise confidence intervals (CI)
+# and confidence bands (CB)
 head(predicted)

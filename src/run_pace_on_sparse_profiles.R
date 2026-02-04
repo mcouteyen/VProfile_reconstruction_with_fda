@@ -50,7 +50,6 @@ if(length(scores_to_remove) > 0){
   incomplete_dates <- incomplete_dates[-scores_to_remove,]
 }
 
-
 reconstructed_coefs <- reconstruct_profiles_coefs(fpca, scr, n_pc)
 
 new_fdobj <- add_reps_to_fdobj(fdobj, reconstructed_coefs)

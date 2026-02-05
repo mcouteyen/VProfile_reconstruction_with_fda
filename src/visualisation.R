@@ -70,7 +70,7 @@ plot_one_profile <- function(index, data_used, data_predicted, data_sup = NULL, 
               color = 'blue',
               lwd = .8,
               alpha = .8) +
-    scale_x_continuous() +
+    scale_x_continuous(expand = c(0.07, 0.07)) +
     scale_y_reverse() + 
     ylab("DEPTH") +
     theme_bw() +

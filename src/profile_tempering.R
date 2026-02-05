@@ -1,5 +1,5 @@
 
-shrink_random_profiles_with_seed <- function(data, test_size = .25){
+shrink_random_profiles_with_seed <- function(data, test_size = .1){
   data_degraded <- data
   data_indexes <- unique(data$INDEX)
   n_random <- round(length(data_indexes)*test_size)

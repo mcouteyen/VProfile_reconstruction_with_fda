@@ -98,7 +98,7 @@ n_pc <- 30
 # Variance parameter (sigma^2) controlling the projection penalty
 # - small values: closer fit to observed data
 # - large values: smoother reconstructed profiles
-proj_pen_sigma <- .001
+proj_pen_sigma <- .1
 
 # Depth grid used for prediction
 start <- 1
@@ -118,7 +118,7 @@ source("src/run_pace_on_sparse_profiles.R")
 plot_scores_projected(fpca, scr)
 
 # Select one incomplete profile to visualise
-index <- incomplete_indexes[8]
+index <- incomplete_indexes[5]
 
 # Plot observed and reconstructed profile with confidence intervals
 plot_one_profile(

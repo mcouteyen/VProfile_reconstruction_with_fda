@@ -1,38 +1,17 @@
 
 
-my_data <- data.frame()
-
-args <- seq(1, 50, .5)
-n_args <- length(args)
-
-for(i in 1:30){
-  min <- sample(c(13:16, 20:22), 1)
-  val <- runif(n_args, min, min + 0.01)
-  my_data <- rbind(my_data, data.frame(INDEX = i,
-                                       DEPTH = args,
-                                       TEMPERATURE = val))
-}
-
-for(i in 31:65){
-  val <- sort(runif(n_args, 16, 19), decreasing = TRUE)
-  my_data <- rbind(my_data, data.frame(INDEX = i,
-                                       DEPTH = args,
-                                       TEMPERATURE = val))
-}
-
-for(i in 66:100){
-  val <- sort(runif(n_args, 16, 25), decreasing = TRUE)
-  my_data <- rbind(my_data, data.frame(INDEX = i,
-                                       DEPTH = args,
-                                       TEMPERATURE = val))
-}
-
-my_data$TEMPERATURE <- round(my_data$TEMPERATURE, 5)
-
-head(my_data)
+somlit_data <- read.csv("C:/Users/mcouteyen/Dropbox/Thèse/publicgit_Couteyen_Carpaye_thesis/data/fpca/somlit_ctd_marseille.csv")
+fdobj <- create_fdobj(somlit_data, "PROFONDEUR", "TEMPERATURE", lambda = bspline_smooth_lambda, K = 50)
+new_data <- eval.fd(1:50, fdobj) %>% as.data.frame()
+new_data <- cbind(data.frame(DEPTH = 1:50), new_data)
+new_data <- pivot_longer(new_data, 2:ncol(new_data), values_to = "TEMPERATURE", names_to = "INDEX") %>% as.data.frame()
+indexes <- unlist(strsplit(new_data$INDEX, " "))
+new_data$INDEX <- parse_integer(indexes [seq(2, length(indexes), 2)])
+new_data <- new_data %>% arrange(INDEX, DEPTH)
+new_data <- new_data %>% filter(INDEX < 251)
 
 source("src/profile_tempering.R")
-sparse_data <- shrink_random_profiles_with_seed(my_data)
+sparse_data <- shrink_random_profiles_with_seed(new_data)
 
 write.csv(sparse_data, "data/example_data.csv", row.names = FALSE)
 

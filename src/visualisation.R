@@ -7,25 +7,26 @@
 #' @param fpca A FPCA object returned by pca.fd.
 #' @param scr A data.frame or matrix of FPCA scores for projected
 #'   incomplete profiles.
+#' @param x integer corresponding to principal component to plot on x axis, by default 1.
+#' @param y Ainteger corresponding to principal component to plot on y axis, by default 2.
 #'
 #' @return A ggplot object.
 #'
 #' @details
 #' The percentage of variance explained by the first two principal components
 #' is displayed on the axes labels.
-plot_scores_projected <- function(fpca, scr){
+plot_scores_projected <- function(fpca, scr, x = 1, y = 2){
   fpca_scores <- fpca$scores
-  colnames <- c()
-  for(n in 1:n_pc){
-    colnames <- c(colnames, paste0("PC", n))
-  }
-  colnames(fpca_scores) <- colnames
-  xlab <- paste0("PC1 ", round(fpca$varprop[1]*100, 2), "%")
-  ylab <- paste0("PC2 ", round(fpca$varprop[2]*100, 2), "%")
+
+  colnames(fpca_scores) <- paste0("PC", 1:n_pc)
+  x_axis <- paste0("PC", x)
+  y_axis <- paste0("PC", y)
+  xlab <- paste0(x_axis, round(fpca$varprop[x]*100, 2), "%")
+  ylab <- paste0(y_axis, round(fpca$varprop[y]*100, 2), "%")
   res <- ggplot() + 
-    geom_point(data = fpca_scores, aes(PC1, PC2, col = "complete profiles"), 
+    geom_point(data = fpca_scores, aes(.data[[x_axis]], .data[[y_axis]], col = "complete profiles"), 
                size = 2.7) +
-    geom_point(data = scr, aes(PC1, PC2, col = "incomplete projected profiles"), 
+    geom_point(data = scr, aes(.data[[x_axis]], .data[[y_axis]], col = "incomplete projected profiles"), 
                alpha = .5,
                size = 2.5) +
     xlab(xlab) +

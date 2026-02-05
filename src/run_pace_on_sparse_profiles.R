@@ -54,8 +54,8 @@ reconstructed_coefs <- reconstruct_profiles_coefs(fpca, scr, n_pc)
 
 new_fdobj <- add_reps_to_fdobj(fdobj, reconstructed_coefs)
 
-reconstructed_profiles <- reconstruct_profiles(fpca, scr, incomplete_indexes, n_pc, my_var)
-
 sd <- compute_asymptotic_sd(fpca, n_pc, cov_fda, proj_pen_sigma)
 
-predicted <- reconstruct_profiles(fpca, scr, incomplete_indexes, n_pc, my_var, CI = TRUE, sd = sd)
+reconstructed_profiles <- reconstruct_profiles(fpca, scr, incomplete_indexes, n_pc, my_var, CI = TRUE, sd = sd)
+
+all_data <- rbind(complete_data, reconstructed_profiles[, c("INDEX", "DEPTH", my_var)])

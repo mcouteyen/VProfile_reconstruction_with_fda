@@ -124,18 +124,14 @@ index <- incomplete_indexes[5]
 plot_one_profile(
   index,
   sparse_data,
-  predicted,
+  reconstructed_profiles,
   var_label = my_var,
   CI = TRUE
 ) + theme(legend.position = "none")
 
-# Preview reconstructed incomplete profiles
-head(reconstructed_profiles)
-
-# Combine complete profiles and reconstructed incomplete profiles
-all_data <- rbind(complete_data, reconstructed_profiles)
-head(all_data)
-
 # Reconstructed profiles with pointwise confidence intervals (CI)
 # and confidence bands (CB)
-head(predicted)
+head(reconstructed_profiles)
+
+# Complete profiles and reconstructed incomplete profiles
+head(all_data)

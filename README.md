@@ -1,6 +1,6 @@
 # Reconstruction of Truncated Vertical Profiles using FDA 
 
-This repository provides the R implementation used in Couteyen Carpaye et al. (in prep) to reconstruct truncated vertical profiles (e.g. temperature, salinity...) with functional data analysis (FDA). This method is based on the principal components analysis through conditional expectation (PACE) described by Yao et al. (2005).
+This repository provides the R implementation used in Couteyen Carpaye et al. (2026) to reconstruct truncated vertical profiles (e.g. temperature, salinity...) with functional data analysis (FDA). This method is based on the principal components analysis through conditional expectation (PACE) described by Yao et al. (2005).
 
 The method is designed for substantial datasets of vertical profiles, that may be irregularly sampled, with some profiles being truncated, or partially missing.
 
@@ -139,7 +139,7 @@ Please cite the software as follows:
 TO-DO
 
 Please cite the associated article:
-TO-DO
+Couteyen Carpaye, M., Nerini, D., Garcia, F., Lagadec, V., Nunige, S., Pecqueur, D., Salmeron, C., Buniak, L., Didry, M., Feuerstein, J.-M., and Grégori, G.: Reconstructing pico- and nanophytoplankton assemblages from long-term coastal thermohaline observations, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2026-3454, 2026.
 
 
 ---

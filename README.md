@@ -136,7 +136,7 @@ Any redistribution or modification must comply with the terms of the GPL.
 If you use this code in your research, please cite the `fda` package and both **the associated scientific article** and **this software repository**.
 
 Please cite the software as follows:
-TO-DO
+Couteyen Carpaye, M. (2026). Vertical profile reconstruction with fda (Version v1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23598020
 
 Please cite the associated article:
 Couteyen Carpaye, M., Nerini, D., Garcia, F., Lagadec, V., Nunige, S., Pecqueur, D., Salmeron, C., Buniak, L., Didry, M., Feuerstein, J.-M., and Grégori, G.: Reconstructing pico- and nanophytoplankton assemblages from long-term coastal thermohaline observations, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2026-3454, 2026.
